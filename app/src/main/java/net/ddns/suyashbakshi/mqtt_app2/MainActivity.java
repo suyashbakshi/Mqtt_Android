@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,7 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv;
     private TextView serverTv;
     private Button connectBtn;
-    private ToggleButton toggleSwitch;
+    private Button getBtn;
+    private EditText setEt;
+    private Button setBtn;
 
     final String clientID = "mobile";
 
@@ -44,25 +47,10 @@ public class MainActivity extends AppCompatActivity {
         tv = (TextView)findViewById(R.id.tv);
         connectBtn = (Button)findViewById(R.id.connectBtn);
         serverTv = (TextView)findViewById(R.id.serverTv);
-        toggleSwitch = (ToggleButton) findViewById(R.id.toggleSwitch);
+        getBtn = (Button)findViewById(R.id.getBtn);
+        setEt = (EditText)findViewById(R.id.setEt);
+        setBtn = (Button) findViewById(R.id.setBtn);
 
-        toggleSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b)
-                    publish("on");
-                else
-                    publish("off");
-            }
-
-        });
-
-//        tv.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                publish();
-//            }
-//        });
 
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(),serverURI,clientID);
         mqttAndroidClient.setCallback(new MqttCallback() {
@@ -73,9 +61,21 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                Log.v("FIREBIRD","Message_Arrived " + message.getPayload());
-                tv.setText("");
-                tv.setText(message.getPayload().toString());
+                Log.v("FIREBIRD","Message_Arrived " + message.toString());
+                String arrivedMsg = message.toString();
+                if(arrivedMsg.equalsIgnoreCase("I'm Alive")){
+                    tv.setText("");
+                    tv.setText(arrivedMsg);
+                    getBtn.setEnabled(true);
+
+                }
+//                else if(arrivedMsg.substring(0,4).equals("Temp") || arrivedMsg.substring(0,4).equals("Temp ")){
+//                    tv.setText(arrivedMsg);
+//                }
+                else{
+                    tv.setText(arrivedMsg);
+                }
+
             }
 
             @Override
@@ -116,6 +116,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        getBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                publish("temp");
+            }
+        });
+
+        setBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String setTemp = setEt.getText().toString();
+                publish("Set: " +setTemp);
+            }
+        });
+
 
     }
 
@@ -125,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Toast.makeText(getApplicationContext(),"Subscribed",Toast.LENGTH_SHORT).show();
+                    publish("Alive?");
                     Log.v("FIREBIRD","Subscribed successfully");
                 }
 
