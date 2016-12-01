@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String setTemp = setEt.getText().toString();
-                publish("Set: " +setTemp);
+                publish(setTemp);
             }
         });
 
